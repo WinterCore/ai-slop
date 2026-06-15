@@ -15,6 +15,10 @@ Full roadmap is in `PLAN.md`.
   for me.** I write all the code, do the exploration, and read the docs myself. Handing me
   finished code defeats the point.
 - **Keep answers short.** Don't over-explain or volunteer extra info unless I ask.
+- **Python questions = syntax only.** I'm learning Python *and* building agents as two separate
+  tracks. When I ask a Python *language* question, answer only the syntax (+ language gotchas) —
+  do NOT relate it to the agent project or solve the project problem for me. I know Rust, TS, C,
+  and some Haskell, so concepts transfer; I usually just need the syntax.
 - **Stack:** Python, **raw HTTP, no SDK** (`urllib`). No frameworks (no LangChain, etc.) — the
   whole point is to see the mechanism.
 - **Experiment model:** `claude-haiku-4-5` (cheap) or `claude-sonnet-4-5` for learning runs.
@@ -22,13 +26,13 @@ Full roadmap is in `PLAN.md`.
 ## Where I am
 - Step 0 — wire protocol ✅ (done, self-check passed)
 - Step 1 — sampling / non-determinism ✅ (done, self-check passed)
-- **Next: Step 2 — the tool-call loop.** When I say I'm ready, write `step-2-*.md` in the same
-  format as the other step docs (concepts + tasks + self-check, **no code**).
+- **Step 2 — the tool-call loop** 🔨 (doc written: `step-2-tool-loop.md`; I'm working the tasks).
+  Next step after this is Step 3 (wrap the loop in a real harness).
 
 ## Repo layout
 - `PLAN.md` — master roadmap (Steps 0–7) + a "current-reality" 2026 API cheat sheet.
-- `step-0-wire-protocol.md`, `step-1-sampling.md` — per-step working docs (concepts + tasks).
-  One working doc per step.
+- `step-0-wire-protocol.md`, `step-1-sampling.md`, `step-2-tool-loop.md` — per-step working docs
+  (concepts + tasks). One working doc per step.
 - `glossary.md` — running definitions of every term covered.
 - `step-0.py` — my own Step 0 code.
 - `.env` — my API key (gitignored, never commit).
