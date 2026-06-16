@@ -76,10 +76,14 @@ Samping is when the model computes the probability of the next word based on all
 ## 1.4 — Done when you can answer
 
 - Why can two identical requests return different text?
+Cuz the sampling step uses a dice roll to pick the next token from the list of possible closely weighted tokens.
 - What is autoregression, in one sentence?
+It's basically sampling but in a loop, it uses the context of N tokens to generate the N + token
 - What does `temperature` actually change about step 3 — and why does a "What is 2+2" prompt
   barely vary regardless?
+It changes the weight threshold which decides what tokens go into the set that is included in the dice roll, higher temperature is lenient and allows tokens with lower weights to be included while a lower temperature is more strict and only allows tokens with high weights to be sampled. 2+2 isn't affected by temperature because for stuff like facts, the answer typically has a weight that's very high related to other possible answers, eg: answer is weighted 1 while other possible answers are between 0 and 0.1, in this case tuning the temperature doesn't really matter cuz therer's no possible tokens in the middle of the range
 - Why does this fact mean you validate an agent with a pass-rate over many cases, not `assert ==`?
+because it doesn't always produce deterministic results. so you always have to run many test cases and calculate a pass-rate.
 
 ---
 

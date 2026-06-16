@@ -26,12 +26,18 @@ Full roadmap is in `PLAN.md`.
 ## Where I am
 - Step 0 — wire protocol ✅ (done, self-check passed)
 - Step 1 — sampling / non-determinism ✅ (done, self-check passed)
-- **Step 2 — the tool-call loop** 🔨 (doc written: `step-2-tool-loop.md`; I'm working the tasks).
-  Next step after this is Step 3 (wrap the loop in a real harness).
+- Step 2 — the tool-call loop ✅ (done; working harness in `step-2.py`, self-check passed)
+- Step 3 — harden the loop into a state machine ✅ (done; `step-3.py`, self-check passed).
+  Every `stop_reason` branched, Pydantic-validated tool inputs, truncated-tool_use abort,
+  iteration + token guards.
+- **Step 4 — context management** 🔨 (doc written: `step-4-context-management.md`; working the
+  tasks). Track token budget, trim/summarize history without orphaning tool_use/tool_result
+  pairs. Next after this is Step 5 (MCP).
 
 ## Repo layout
 - `PLAN.md` — master roadmap (Steps 0–7) + a "current-reality" 2026 API cheat sheet.
-- `step-0-wire-protocol.md`, `step-1-sampling.md`, `step-2-tool-loop.md` — per-step working docs
+- `step-0-wire-protocol.md`, `step-1-sampling.md`, `step-2-tool-loop.md`,
+  `step-3-state-machine.md`, `step-4-context-management.md` — per-step working docs
   (concepts + tasks). One working doc per step.
 - `glossary.md` — running definitions of every term covered.
 - `step-0.py` — my own Step 0 code.

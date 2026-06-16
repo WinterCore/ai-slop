@@ -175,11 +175,18 @@ trim it. Keep both in mind; don't build them yet.
 
 - What are the three parts of a tool definition, and which one does the model use to *decide* to
   call it?
+name: used to refer to the tool when the model wants to call it
+description: used by the model for the decision
+input_schema: as the name implies, the input schema of the tool (number of args, types, etc)
 - When `stop_reason` is `tool_use`, what exactly must you append to `messages` before the next
   request — and why does omitting the assistant turn break it?
+I need to append the tool_use request by the assistant, not sure why though, i guess cuz it doesn't make sense for a tool result to be in the history without the request to use it
 - What links a `tool_result` to the specific call it answers?
+tool_use_id
 - What makes the loop terminate? What stops it from looping forever?
+a depth that i keep track of
 - "The model executed the function." — what's wrong with that sentence?
+The model doesn't execute the function, the model requests to use a tool (a function) but my code is what executes it.
 
 ---
 
