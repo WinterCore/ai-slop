@@ -128,10 +128,17 @@ runner.
 
 - Why does `input_tokens` grow every turn, and why does the *tool loop* make it grow faster than
   plain chat?
+Because we're sending the entire history with every new message. A tool loop makes it grow faster because it's recursive and a tool might call other tools.
 - What exactly counts against the context window on a request?
+System prompt + tools + input (which is basically the entire history input + output)
 - Why can't you implement trimming as a simple "drop the oldest K messages" slice?
+Because older messages might contain context that the user cares about
 - Truncation vs. summarization: what does each cost, and what does each lose?
+Truncation loses old context which might be important.
+Summarization may decide to omit useful information especially in the last few messages which is what the user is currently working on.
+A hybrid approach is preffered in most cases. which is basically keep the last n messages and summarize everything before that. this way the things that the user is currently working on stay intact.
 - Why build the manual trimmer before using the server-side compaction beta?
+So i understand how it works and the edge cases i have to keep in mind when truncating/summarizing
 
 ---
 

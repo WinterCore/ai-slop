@@ -30,17 +30,26 @@ Full roadmap is in `PLAN.md`.
 - Step 3 — harden the loop into a state machine ✅ (done; `step-3.py`, self-check passed).
   Every `stop_reason` branched, Pydantic-validated tool inputs, truncated-tool_use abort,
   iteration + token guards.
-- **Step 4 — context management** 🔨 (doc written: `step-4-context-management.md`; working the
-  tasks). Track token budget, trim/summarize history without orphaning tool_use/tool_result
-  pairs. Next after this is Step 5 (MCP).
+- Step 4 — context management ✅ (done; `step-4.py`, self-check passed). Token budgeting via
+  `count_tokens`, hybrid trim+summarize that respects tool_use/tool_result pairing, folds the
+  first kept user turn into the summary to avoid consecutive-user messages.
+- **Step 5 — MCP** 🔨 (doc written: `step-5-mcp.md`; working the tasks). Wrap the existing
+  tools as an MCP server, drive them from a client I didn't write (Claude Code). Next is Step 6
+  (evals).
+
+Along the way I had Claude write two pieces of plumbing (I relaxed the no-code rule for these,
+since they're wire-protocol boilerplate, not agent logic): `anthropic_api.py` (Pydantic models
+for the Messages API request/response) and the `count_tokens`/`summarize_history` HTTP helpers.
+Note: most code now runs on `claude-haiku-4-5` (cheap), not sonnet.
 
 ## Repo layout
 - `PLAN.md` — master roadmap (Steps 0–7) + a "current-reality" 2026 API cheat sheet.
-- `step-0-wire-protocol.md`, `step-1-sampling.md`, `step-2-tool-loop.md`,
-  `step-3-state-machine.md`, `step-4-context-management.md` — per-step working docs
-  (concepts + tasks). One working doc per step.
+- `step-0-wire-protocol.md` … `step-5-mcp.md` — per-step working docs (concepts + tasks).
+  One working doc per step.
 - `glossary.md` — running definitions of every term covered.
-- `step-0.py` — my own Step 0 code.
+- `step-0.py` … `step-4.py` — my own per-step code (the harness as it grows).
+- `anthropic_api.py` — Pydantic models for the Messages API (Claude-written plumbing).
+- `requirements.txt` — pydantic, python-dotenv. (venv: `.venv/`, gitignored.)
 - `.env` — my API key (gitignored, never commit).
 
 ## Facts to keep accurate (don't regress to old blog-post knowledge)

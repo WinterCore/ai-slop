@@ -44,28 +44,28 @@ Two facts about the box explain ~80% of everything below. Burn them in:
 
 ## The Steps
 
-### Step 0 — See the actual wire protocol  ·  ~1 day  ·  `step-0-wire-protocol.md`
+### Step 0 — See the actual wire protocol  ·  ~1 day  ·  `step-0-wire-protocol.md`  ·  ✅ DONE
 Don't touch an SDK. `curl` the Messages API by hand so you internalize what a model call *is*:
 an HTTP POST, JSON in, JSON out. Prove statelessness to yourself. See tokens. Watch streaming
 arrive as SSE.
-- [ ] Send a basic request, read every field of the response JSON
-- [ ] Prove the model is stateless (forget vs. remember experiment)
-- [ ] Stream a response and read the raw SSE event sequence
-- [ ] Count tokens with `/v1/messages/count_tokens`; read the `usage` block
+- [x] Send a basic request, read every field of the response JSON
+- [x] Prove the model is stateless (forget vs. remember experiment)
+- [x] Stream a response and read the raw SSE event sequence
+- [x] Count tokens with `/v1/messages/count_tokens`; read the `usage` block
 - **Done when:** you can explain why there's no session ID, what you resend each turn, and what
   `stop_reason` tells your code to do next.
 
-### Step 1 — Why output is non-deterministic  ·  ~0.5 day  ·  no math
+### Step 1 — Why output is non-deterministic  ·  ~0.5 day  ·  no math  ·  ✅ DONE
 The box outputs a distribution over the next token; sampling picks one; it's appended and fed
 back in; repeat. That loop is **autoregression**. You do *not* need to know how the distribution
 is computed (that's the transformer math — skip it). You only need: **output is sampled, not
 deterministic.** That single fact is the root of non-determinism, "hallucination," and why
 Step 6 (evals) exists instead of unit tests.
-- [ ] Send the *same* prompt 5×, observe variation
-- [ ] Write one paragraph in your own words: sampling → autoregression → why evals not equality
+- [x] Send the *same* prompt 5×, observe variation
+- [x] Write one paragraph in your own words: sampling → autoregression → why evals not equality
 - **Done when:** you can say why two identical requests can return different text.
 
-### Step 2 — Hand-build the tool-call loop, no framework  ·  3–5 days  ·  the core
+### Step 2 — Hand-build the tool-call loop, no framework  ·  3–5 days  ·  the core  ·  ✅ DONE
 This is the heart of agents and it's pure systems work. Mechanism:
 1. In the request you include a list of **tools** — each just a `name` + JSON Schema of its args.
 2. The model can reply with a structured `tool_use` block (`call read_file with {path: ...}`)
@@ -76,36 +76,36 @@ This is the heart of agents and it's pure systems work. Mechanism:
 
 Build it with 2–3 real tools (`read_file`, `list_dir`, `run_command`), ~150 lines of TS.
 No LangChain — frameworks hide the exact mechanism you're learning.
-- [ ] Define tools as JSON Schema; send them
-- [ ] Detect `stop_reason == "tool_use"`, dispatch to the real function
-- [ ] Append `tool_result`, loop, terminate on `end_turn`
+- [x] Define tools as JSON Schema; send them
+- [x] Detect `stop_reason == "tool_use"`, dispatch to the real function
+- [x] Append `tool_result`, loop, terminate on `end_turn`
 - Note: the official SDK has a "tool runner" that hides this loop. Build the manual version
   first so you understand what it's hiding.
 - **Done when:** the model asks to read a file, your harness reads it, feeds it back, and the
   model answers using the contents — all in your own loop.
 
-### Step 3 — Harden the loop into a real state machine  ·  week 2
+### Step 3 — Harden the loop into a real state machine  ·  week 2  ·  ✅ DONE
 This is what separates "did a tutorial" from "can talk about it in an interview." The
 `stop_reason` field is your state machine's transition table. Handle the failure modes:
-- [ ] Model emits malformed/invalid tool JSON → validate, feed the error back as a `tool_result`
-- [ ] Tool throws → catch, return the error as a tool result (with `is_error: true`), let it recover
-- [ ] Infinite loop (model keeps calling tools) → max-iteration cap
-- [ ] `stop_reason == "max_tokens"` → you truncated; bump the limit / handle continuation
-- [ ] `stop_reason == "refusal"` → safety decline; handle, don't blindly retry
-- [ ] `stop_reason == "pause_turn"` → server-side tool hit its cap; resend to continue
-- [ ] Runaway cost → token/spend budget per run
+- [x] Model emits malformed/invalid tool JSON → validate, feed the error back as a `tool_result`
+- [x] Tool throws → catch, return the error as a tool result (with `is_error: true`), let it recover
+- [x] Infinite loop (model keeps calling tools) → max-iteration cap
+- [x] `stop_reason == "max_tokens"` → you truncated; bump the limit / handle continuation
+- [x] `stop_reason == "refusal"` → safety decline; handle, don't blindly retry
+- [x] `stop_reason == "pause_turn"` → server-side tool hit its cap; resend to continue
+- [x] Runaway cost → token/spend budget per run
 - **Done when:** every `stop_reason` has an explicit branch and bad tool JSON can't crash you.
 
-### Step 4 — Context management  ·  a few days
+### Step 4 — Context management  ·  a few days  ·  ✅ DONE
 Because the box is stateless with a finite window, *your harness* decides what to keep each turn.
 Learn the manual version first: a buffer you trim or summarize (with a cheap model call) as it
 grows. Then know the server-side helpers exist (`compaction`, `context editing` betas) — and
 you'll actually understand *why* they exist.
-- [ ] Track token count of your message buffer
-- [ ] Trim oldest turns when near the window; OR summarize them with a `claude-haiku-4-5` call
+- [x] Track token count of your message buffer
+- [x] Trim oldest turns when near the window; OR summarize them with a `claude-haiku-4-5` call
 - **Done when:** a long conversation stays under the context window without crashing, by your code's decision.
 
-### Step 5 — Wrap your tools as an MCP server  ·  portfolio piece
+### Step 5 — Wrap your tools as an MCP server  ·  portfolio piece  ·  🔨 IN PROGRESS
 MCP is to tools what a syscall ABI is to the kernel: a stable interface (JSON-RPC over
 stdio/SSE) so *any* client can call *any* tool server with no custom wiring. Expose your Step 2
 tools as an MCP server, point Claude Code at it, watch it work. Concrete, demonstrable.
