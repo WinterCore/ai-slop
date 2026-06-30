@@ -160,13 +160,21 @@ Code something that needs your tool, and it calls *your* server over MCP.
 
 - What problem does MCP solve that your Step 2 harness didn't — i.e. what does "any client can call
   any server" buy you?
-- In MCP terms, who owns the model loop and who owns the tools — and how is that different from
-  Step 2?
+  It allows plugging in external tools and having them work out of the box.
+- In MCP terms, who owns the model loop and who owns the tools — and how is that different from Step 2?
+  The client owns the model loop (and can optionally own tools) but MCPs only own the tools and have no direct model access. in step 2 we had to work with the model directly but with MCPs the client does that for us and we only have to worry about responding to tool requests
 - What's the message format, and how does a response get matched to its request?
+JSONRPC 2.0 over stdio/stdout or HTTP. a response gets matched to its request with the id property
 - Why must *nothing* but protocol messages go to stdout on the stdio transport?
+Because it's the main communication channel between the client and the MCP, any garbage send through that channel, any leftout print statement will be parsed by the client and will cause errors. The client can't differentiate between protocol messages and debugging statements
 - Walk the lifecycle: what are the first three messages on any connection?
-- How does an MCP tool definition map to the tool definition you already wrote for the Messages
-  API?
+1. Handshake `initialize` which the MCP must reply to
+2. `notifications/initialized` ignored
+3. `tools/list` send all the tools the MCP provides to the client
+4. `tool/call` basically a loop of tool/call send by the client
+- How does an MCP tool definition map to the tool definition you already wrote for the Messages API?
+I'm not sure honestly. In the MCP case maybe the client passes these tools to the model upon initialization? so that the model that they exist?
+
 
 ---
 
