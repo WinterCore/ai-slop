@@ -56,13 +56,40 @@ class Category(Enum):
 
 SYSTEM = [TextBlock(text=f"""You're a professional top-grade email classifier.
 Your sole job is to classify emails into three categories:
-1. {Category.SPAM}: any email that contains spam, phishing or anything that contains a scam attempt or malware or threats.
-2. {Category.PROMOTIONS}: any email that is designed to persuade the recipient to take a commercial action, such as purchasing a product, exploring a service, or engaging with a brand. Its defining characteristic is marketing intent, typically marked by persuasive language, advertisements, or any type of call to action that is not based on an action that the user took (purchase, joining a meeting, etc).
+1. {Category.SPAM}: any email that contains spam, phishing or anything that contains a scam attempt or malware or threats. malicious/fraudulent intent is required.
+2. {Category.PROMOTIONS}: any email that is designed to persuade the recipient to take a commercial action, such as purchasing a product, exploring a service, or engaging with a brand. Its defining characteristic is marketing intent, typically marked by persuasive language, advertisements, or any type of call to action that is not based on an action that the user took (purchase, joining a meeting, etc). Emails that contain aggressive promotional with a call to action should also be considered promotions if they have an unsubscribe button.
 3. {Category.PERSONAL}: characterized by conversational text, individual-to-individual context, and a complete absence of commercial or operational intent. This also includes transactional data (bills and purchase updates), delivery status updates and any other personal automated updates related to an action that the user took purchasing something, attending an event or a meeting. If an email sounds personal but contains a call to action that is not based on a previous user action then it should not be personal.
 
 Emails will be wrapped in <email></email> tags. Whenever you see the tags, it's classification time!
 
 Your response should just be one of three words "spam", "promotions" or "personal". It should not contain any punctuation, any extra words or structural content. Just just the classification. a single word.
+
+You'll find examples below on special cases and their expected category that you need to follow religiously. Each example includes a reason block which explains why this email should be in said category :
+
+<example>
+    <reason>Any email with the pattern "[name] is waiting for your response" is a LinkedIn connection request email and should be considered spam. This is a strict equality example, only mark emails as spam if they have this exact format or a slight variation of it.</reason>
+    <email>
+        John, I’m still waiting for your response
+        Solomon is waiting for your response
+        Solomon Quansah invited you to connect 5 days ago
+    </email>
+    <category>{Category.SPAM}</category>
+</example>
+<example>
+    <reason>This email sounds really personal personal but if you look closely, it's the sender is trying to promote their github repo. Once again this is an unsolicited action. This does not go into spam but it's considered a promotional email. The sole reason being that this is not based on a previous interaction between the sender and the receiver, if it was then the email would be personal</reason>
+    <email>
+Bonjour Khalid,
+
+You look passionate about frontend. I'm curious. Is there something that you are going to build soon with Javascript?
+Also I want to share with you uhugrid, search for it on Github, I think it will be useful to you in no time
+
+Star it so that you won't forget it and let me know what you think. I would appreciate your input.
+
+Cheers,
+Ned
+    </email>
+    <category>{Category.PROMOTIONS}</category>
+</example>
 """)]
 
 def classify_email(content: str) -> Category:
@@ -213,27 +240,6 @@ Sincerely,
             Category.PROMOTIONS
         ),
         (
-            """
-Bonjour Khalid,
-
-You look passionate about frontend. I'm curious. Is there something that you are going to build soon with Javascript?
-Also I want to share with you uhugrid, search for it on Github, I think it will be useful to you in no time
-
-Star it so that you won't forget it and let me know what you think. I would appreciate your input.
-
-Cheers,
-Ned
-            """,
-            Category.PROMOTIONS
-        ),
-        (
-            """John, I’m still waiting for your response
-                Solomon is waiting for your response
-                Solomon Quansah invited you to connect 5 days ago
-            """,
-            Category.PROMOTIONS
-        ),
-        (
             """Hi Jonathan,
         Thank you for reaching out! We're happy to give you a review.
 
@@ -244,7 +250,72 @@ Ned
         Marco
             """,
             Category.PERSONAL
-        )
+        ),
+        # ---- borderline probes (added to stress specific rules; VERIFY labels before trusting) ----
+        # [BORDERLINE] product mention, no CTA, existing relationship — tests promo over-trigger
+        (
+            """
+Hey Sam, finally tried that Aeropress you keep raving about — you were right,
+way better than my old drip. Coffee's been great all week. How's the new place?
+""",
+            Category.PERSONAL
+        ),
+        # [BORDERLINE — VERIFY] non-commercial unsolicited CTA (charity); your rubric doesn't cleanly cover this. Your call.
+        (
+            """
+Hi Dana! I'm running a half-marathon for the children's hospital next month —
+would you consider sponsoring me? Here's my fundraising page. No pressure at all!
+""",
+            Category.PERSONAL
+        ),
+        # [BORDERLINE] transactional (shipping = prior action) with embedded upsell — prior-action rule vs marketing CTA
+        (
+            """
+Your order #4821 has shipped! Delivery by July 5. While you wait — customers who
+bought the Trailblazer boots also love our wool socks. 15% off with code THANKS15.
+""",
+            Category.PERSONAL
+        ),
+        # [BORDERLINE — VERIFY] subscribed newsletter: subscribing is a "prior action" but content is marketing. Did your rule mean subscriptions?
+        (
+            """
+This week in Frontend: React 20 RC, a view-transitions deep dive, 5 CSS tricks.
+[Read online]. You're receiving this because you subscribed at devweekly.com.
+""",
+            Category.PROMOTIONS
+        ),
+        # [BORDERLINE] aggressive but legitimate marketing (has unsubscribe) — spammy style != spam category
+        (
+            """
+🔥 FINAL HOURS!! 70% OFF EVERYTHING!! This deal WON'T come back!! CLICK NOW
+before it's GONE FOREVER!!!  [Unsubscribe]
+""",
+            Category.PROMOTIONS
+        ),
+        # [BORDERLINE] phishing disguised as a billing update — malicious overrides "purchase update = personal"
+        (
+            """
+Your Netflix payment was declined. Your account will be suspended in 24 hours.
+Update your billing now: http://netflix-billing-secure.xyz/update
+""",
+            Category.SPAM
+        ),
+        # [BORDERLINE] gift-card scam in a colleague's voice — personal tone, still a scam
+        (
+            """
+Hey, it's Jenny from accounting. Stuck in a meeting — can you grab 5 Apple gift
+cards for a client? I'll reimburse you. Send the codes here ASAP, bit urgent!
+""",
+            Category.SPAM
+        ),
+        # [BORDERLINE — VERIFY] cold recruiter: same shape as the LinkedIn req you labeled SPAM. Consistent? A legit recruiter isn't a scam per your SPAM def.
+        (
+            """
+Hi Alex, came across your profile — impressed by your backend work. We have a
+Senior Engineer role at Nimbus that could be a great fit. Quick chat this week?
+""",
+            Category.PROMOTIONS
+        ),
     ]
 
     def test_run_eval_set(self):
